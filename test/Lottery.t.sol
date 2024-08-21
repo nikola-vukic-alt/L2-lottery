@@ -81,7 +81,7 @@ contract LotteryTest is Test {
     //       Validations        //
     //////////////////////////////
 
-    function test_EnterLotteryRevertsIfIncorrectParticipationFeeIsSent()
+    function test_EnterLottery_RevertIf_IncorrectParticipationFeeIsSent()
         public
     {
         vm.prank(players[0]);
@@ -97,7 +97,7 @@ contract LotteryTest is Test {
         lottery.enterLottery{value: PARITICIPATION_FEE - 1}();
     }
 
-    function test_EnterLotteryRevertsIfSenderIsAlreadyPlayer() public {
+    function test_EnterLottery_RevertIf_SenderIsAlreadyPlayer() public {
         vm.deal(players[0], 2 * PARITICIPATION_FEE);
 
         vm.startPrank(players[0]);
@@ -109,7 +109,7 @@ contract LotteryTest is Test {
         vm.stopPrank();
     }
 
-    function test_EnterLotteryRevertsIfLotteryIsClosed() public {
+    function test_EnterLottery_RevertIf_LotteryIsClosed() public {
         vm.warp(block.timestamp + 10 days);
 
         vm.prank(players[0]);
@@ -118,14 +118,14 @@ contract LotteryTest is Test {
         lottery.enterLottery{value: PARITICIPATION_FEE}();
     }
 
-    function test_WithdrawFromLotteryRevertsIfSenderIsNotPlayer() public {
+    function test_WithdrawFromLottery_RevertIf_SenderIsNotPlayer() public {
         vm.prank(players[0]);
 
         vm.expectRevert(Lottery.NotPlayer.selector);
         lottery.withdrawFromLottery();
     }
 
-    function test_WithdrawFromLotteryRevertsIfLotteryIsClosed()
+    function test_WithdrawFromLottery_RevertIf_LotteryIsClosed()
         public
         lotteryEntered
     {
@@ -135,12 +135,12 @@ contract LotteryTest is Test {
         lottery.withdrawFromLottery();
     }
 
-    function test_DrawWinnerRevertsIfNoPlayersHaveEntered() public {
+    function test_DrawWinner_RevertIf_NoPlayersHaveEntered() public {
         vm.expectRevert(Lottery.NoPlayersEntered.selector);
         lottery.drawWinner();
     }
 
-    function test_DrawWinnerRevertsIfNotEnoughTimeHasPassed()
+    function test_DrawWinner_RevertIf_NotEnoughTimeHasPassed()
         public
         lotteryEntered
     {
