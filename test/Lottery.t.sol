@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
-import {Lottery} from "../src/Lottery.sol";
+import {Lottery} from "../src/VulnerableLottery.sol";
 
 contract LotteryTest is Test {
     uint256 public constant PARITICIPATION_FEE = 1e16;
@@ -16,6 +16,12 @@ contract LotteryTest is Test {
     ];
 
     Lottery public lottery;
+
+    modifier lotteryEntered() {
+        vm.startPrank(players[0]);
+        lottery.enterLottery{value: PARITICIPATION_FEE}();
+        _;
+    }
 
     function setUp() public {
         lottery = new Lottery();
@@ -33,6 +39,18 @@ contract LotteryTest is Test {
         lottery.enterLottery{value: PARITICIPATION_FEE}();
 
         uint256 newBalance = address(lottery).balance;
+
+        assertEq(oldBalance + PARITICIPATION_FEE, newBalance);
+    }
+
+    function test_WithdrawFromLotteryIncreasesPlayersBalance()
+        public
+        lotteryEntered
+    {
+        uint256 oldBalance = address(players[0]).balance;
+
+        lottery.withdrawFromLottery();
+        uint256 newBalance = address(players[0]).balance;
 
         assertEq(oldBalance + PARITICIPATION_FEE, newBalance);
     }
@@ -69,6 +87,32 @@ contract LotteryTest is Test {
         vm.stopPrank();
     }
 
+    function test_EnterLotteryRevertsIfLotteryIsClosed() public {
+        vm.warp(block.timestamp + 10 days);
+
+        vm.prank(players[0]);
+        vm.expectRevert(Lottery.LotteryClosed.selector);
+
+        lottery.enterLottery{value: PARITICIPATION_FEE}();
+    }
+
+    function test_WithdrawFromLotteryRevertsIfSenderIsNotPlayer() public {
+        vm.prank(players[0]);
+
+        vm.expectRevert(Lottery.NotPlayer.selector);
+        lottery.withdrawFromLottery();
+    }
+
+    function test_WithdrawFromLotteryRevertsIfLotteryIsClosed()
+        public
+        lotteryEntered
+    {
+        vm.warp(block.timestamp + 10 days);
+
+        vm.expectRevert(Lottery.LotteryClosed.selector);
+        lottery.withdrawFromLottery();
+    }
+
     //////////////////////////////
     //          Events          //
     //////////////////////////////
@@ -79,5 +123,12 @@ contract LotteryTest is Test {
 
         vm.prank(players[0]);
         lottery.enterLottery{value: PARITICIPATION_FEE}();
+    }
+
+    function test_WithdrawFromLotteryEmitsEvent() public lotteryEntered {
+        vm.expectEmit();
+        emit Lottery.PlayerWithdrew(players[0]);
+
+        lottery.withdrawFromLottery();
     }
 }

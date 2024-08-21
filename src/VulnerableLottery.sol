@@ -56,6 +56,8 @@ contract Lottery {
 
         // Reentrancy vulnerability
         s_players.remove(msg.sender);
+
+        emit PlayerWithdrew(msg.sender);
     }
 
     function drawWinner() external {
@@ -91,6 +93,8 @@ contract Lottery {
     }
 
     function _shouldCloseLottery() private view returns (bool) {
-        return block.timestamp >= s_startTime + 7 days;
+        return
+            block.timestamp >= s_startTime + 7 days &&
+            s_state == LotteryState.OPEN;
     }
 }
