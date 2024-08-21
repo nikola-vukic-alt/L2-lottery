@@ -13,9 +13,11 @@ contract Lottery {
 
     uint256 public constant PARITICIPATION_FEE = 1e16;
 
-    LotteryState private s_state;
+    LotteryState public s_state;
+    address public s_lastWinner;
+
     EnumerableSet.AddressSet private s_players;
-    uint256 s_startTime;
+    uint256 private s_startTime;
 
     event NewPlayerEntered(address playerAddress);
     event PlayerWithdrew(address playerAddress);
@@ -27,6 +29,7 @@ contract Lottery {
     error LotteryClosed();
     error TransferFailed();
     error NotEnoughTimePassed();
+    error NoPlayersEntered();
 
     modifier onlyWhenStateIsOpen() {
         if (_shouldCloseLottery()) s_state = LotteryState.CLOSED;
@@ -61,18 +64,22 @@ contract Lottery {
     }
 
     function drawWinner() external {
+        uint256 playerCount = s_players.length();
+
+        if (0 == playerCount) revert NoPlayersEntered();
+
         if (LotteryState.OPEN == s_state && false == _shouldCloseLottery())
             revert NotEnoughTimePassed();
 
         s_state = LotteryState.CLOSED;
-
-        uint256 playerCount = s_players.length();
 
         // Timestamp dependance vulnerability
         uint256 winnerIdx = block.timestamp % playerCount;
 
         address winner = s_players.at(winnerIdx);
         uint256 prize = address(this).balance;
+
+        s_lastWinner = winner;
 
         (bool success, ) = winner.call{value: prize}("");
         if (false == success) revert TransferFailed();
@@ -86,10 +93,6 @@ contract Lottery {
         s_startTime = block.timestamp;
 
         emit WinnerPicked(winner, prize);
-    }
-
-    function getState() external view returns (uint256) {
-        return uint256(s_state);
     }
 
     function _shouldCloseLottery() private view returns (bool) {

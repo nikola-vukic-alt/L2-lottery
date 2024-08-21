@@ -29,7 +29,10 @@ contract LotteryTest is Test {
     }
 
     function test_LotteryStartsInOpenState() public view {
-        assertEq(lottery.getState(), uint256(Lottery.LotteryState.OPEN));
+        assertEq(
+            uint256(lottery.s_state()),
+            uint256(Lottery.LotteryState.OPEN)
+        );
     }
 
     function test_EnterLotteyIncreasesContractBalance() public {
@@ -53,6 +56,25 @@ contract LotteryTest is Test {
         uint256 newBalance = address(players[0]).balance;
 
         assertEq(oldBalance + PARITICIPATION_FEE, newBalance);
+    }
+
+    function test_DrawWinnerIncreasesWinnersBalance() public {
+        uint256 playerCount = 5;
+        uint256 prize = playerCount * PARITICIPATION_FEE;
+
+        uint256 oldBalance = address(players[0]).balance;
+
+        for (uint256 i = 0; i < playerCount; i++) {
+            vm.prank(players[i]);
+            lottery.enterLottery{value: PARITICIPATION_FEE}();
+        }
+
+        vm.warp(1725027410);
+        lottery.drawWinner();
+
+        uint256 newBalance = address(players[0]).balance;
+
+        assertEq(newBalance, oldBalance + prize - PARITICIPATION_FEE);
     }
 
     //////////////////////////////
@@ -113,6 +135,19 @@ contract LotteryTest is Test {
         lottery.withdrawFromLottery();
     }
 
+    function test_DrawWinnerRevertsIfNoPlayersHaveEntered() public {
+        vm.expectRevert(Lottery.NoPlayersEntered.selector);
+        lottery.drawWinner();
+    }
+
+    function test_DrawWinnerRevertsIfNotEnoughTimeHasPassed()
+        public
+        lotteryEntered
+    {
+        vm.expectRevert(Lottery.NotEnoughTimePassed.selector);
+        lottery.drawWinner();
+    }
+
     //////////////////////////////
     //          Events          //
     //////////////////////////////
@@ -130,5 +165,14 @@ contract LotteryTest is Test {
         emit Lottery.PlayerWithdrew(players[0]);
 
         lottery.withdrawFromLottery();
+    }
+
+    function test_DrawWinnerEmitsEvent() public lotteryEntered {
+        vm.warp(block.timestamp + 10 days);
+
+        vm.expectEmit();
+        emit Lottery.WinnerPicked(players[0], PARITICIPATION_FEE);
+
+        lottery.drawWinner();
     }
 }
