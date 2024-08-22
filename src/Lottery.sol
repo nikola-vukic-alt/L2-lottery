@@ -11,7 +11,7 @@ contract Lottery {
         CLOSED
     }
 
-    uint256 public constant PARITICIPATION_FEE = 1e16;
+    uint256 public constant PARITICIPATION_FEE = 0.01 ether;
 
     LotteryState public s_state;
 

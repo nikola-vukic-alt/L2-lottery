@@ -2,10 +2,10 @@
 pragma solidity ^0.8.0;
 
 import {Test, console} from "forge-std/Test.sol";
-import {Lottery} from "../src/VulnerableLottery.sol";
+import {Lottery} from "../src/Lottery.sol";
 
 contract LotteryTest is Test {
-    uint256 public constant PARITICIPATION_FEE = 1e16;
+    uint256 public constant PARITICIPATION_FEE = 0.01 ether;
 
     address owner = makeAddr("owner");
     address[] players = [

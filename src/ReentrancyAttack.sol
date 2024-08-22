@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Lottery} from "./VulnerableLottery.sol";
+import {Lottery} from "./Lottery.sol";
 
 contract ReentrancyAttack {
-    uint256 public constant PARITICIPATION_FEE = 1e16;
+    uint256 public constant PARITICIPATION_FEE = 0.01 ether;
 
     Lottery private s_target;
     address private s_owner;
