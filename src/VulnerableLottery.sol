@@ -14,8 +14,8 @@ contract Lottery {
     uint256 public constant PARITICIPATION_FEE = 1e16;
 
     LotteryState public s_state;
-    address public s_lastWinner;
 
+    address public immutable s_owner;
     EnumerableSet.AddressSet private s_players;
     uint256 private s_startTime;
 
@@ -27,7 +27,7 @@ contract Lottery {
     error NotPlayer();
     error IncorrectParticipationFee(uint256 required, uint256 given);
     error LotteryClosed();
-    error TransferFailed();
+    error TransferFailed(address from, address to, uint256 amount);
     error NotEnoughTimePassed();
     error NoPlayersEntered();
 
@@ -38,6 +38,7 @@ contract Lottery {
     }
 
     constructor() {
+        s_owner = msg.sender;
         s_startTime = block.timestamp;
         s_state = LotteryState.OPEN;
     }
@@ -55,7 +56,12 @@ contract Lottery {
         if (false == s_players.contains(msg.sender)) revert NotPlayer();
 
         (bool success, ) = msg.sender.call{value: PARITICIPATION_FEE}("");
-        if (false == success) revert TransferFailed();
+        if (false == success)
+            revert TransferFailed(
+                address(this),
+                msg.sender,
+                PARITICIPATION_FEE
+            );
 
         // Reentrancy vulnerability
         s_players.remove(msg.sender);
@@ -77,12 +83,21 @@ contract Lottery {
         uint256 winnerIdx = block.timestamp % playerCount;
 
         address winner = s_players.at(winnerIdx);
+
         uint256 prize = address(this).balance;
 
-        s_lastWinner = winner;
+        // Could tehnically overflow
+        uint256 ownerProfit = (prize * 5) / 100;
+
+        prize -= ownerProfit;
 
         (bool success, ) = winner.call{value: prize}("");
-        if (false == success) revert TransferFailed();
+        if (false == success)
+            revert TransferFailed(address(this), winner, prize);
+
+        (success, ) = s_owner.call{value: ownerProfit}("");
+        if (false == success)
+            revert TransferFailed(address(this), s_owner, ownerProfit);
 
         // DoS vulnerability
         for (uint256 i = 0; i < playerCount; i++) {

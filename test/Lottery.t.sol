@@ -7,6 +7,7 @@ import {Lottery} from "../src/VulnerableLottery.sol";
 contract LotteryTest is Test {
     uint256 public constant PARITICIPATION_FEE = 1e16;
 
+    address owner = makeAddr("owner");
     address[] players = [
         makeAddr("p1"),
         makeAddr("p2"),
@@ -24,6 +25,7 @@ contract LotteryTest is Test {
     }
 
     function setUp() public {
+        vm.prank(owner);
         lottery = new Lottery();
         for (uint256 i = 0; i < 5; i++) vm.deal(players[i], PARITICIPATION_FEE);
     }
@@ -61,6 +63,7 @@ contract LotteryTest is Test {
     function test_DrawWinnerIncreasesWinnersBalance() public {
         uint256 playerCount = 5;
         uint256 prize = playerCount * PARITICIPATION_FEE;
+        uint256 ownerProfit = (prize * 5) / 100;
 
         uint256 oldBalance = address(players[0]).balance;
 
@@ -74,7 +77,30 @@ contract LotteryTest is Test {
 
         uint256 newBalance = address(players[0]).balance;
 
-        assertEq(newBalance, oldBalance + prize - PARITICIPATION_FEE);
+        assertEq(
+            newBalance,
+            oldBalance + prize - ownerProfit - PARITICIPATION_FEE
+        );
+    }
+
+    function testDrawWinnerIncreasesOwnersBalance() public {
+        uint256 playerCount = 5;
+        uint256 prize = playerCount * PARITICIPATION_FEE;
+        uint256 ownerProfit = (prize * 5) / 100;
+
+        uint256 oldBalance = address(owner).balance;
+
+        for (uint256 i = 0; i < playerCount; i++) {
+            vm.prank(players[i]);
+            lottery.enterLottery{value: PARITICIPATION_FEE}();
+        }
+
+        vm.warp(block.timestamp + 10 days);
+        lottery.drawWinner();
+
+        uint256 newBalance = address(owner).balance;
+
+        assertEq(newBalance, oldBalance + ownerProfit);
     }
 
     //////////////////////////////
@@ -171,7 +197,10 @@ contract LotteryTest is Test {
         vm.warp(block.timestamp + 10 days);
 
         vm.expectEmit();
-        emit Lottery.WinnerPicked(players[0], PARITICIPATION_FEE);
+        emit Lottery.WinnerPicked(
+            players[0],
+            PARITICIPATION_FEE - (PARITICIPATION_FEE * 5) / 100
+        );
 
         lottery.drawWinner();
     }
