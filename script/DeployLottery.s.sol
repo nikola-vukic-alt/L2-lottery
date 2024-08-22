@@ -12,8 +12,8 @@ contract DeployLottery is Script {
 
         lottery = new Lottery();
 
-        console.log("Lottery deployed at:", address(lottery));
-
         vm.stopBroadcast();
+
+        console.log("Lottery deployed at:", address(lottery));
     }
 }
