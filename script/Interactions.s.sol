@@ -6,7 +6,7 @@ import {Script, console} from "forge-std/Script.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 
 contract EnterLottery is Script {
-    uint256 public constant PARITICIPATION_FEE = 0.01 ether;
+    uint256 public constant PARITICIPATION_FEE = 0.001 ether;
 
     function enterLottery(address mostRecentlyDeployed) public {
         vm.startBroadcast();

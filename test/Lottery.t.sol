@@ -5,7 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {Lottery} from "../src/Lottery.sol";
 
 contract LotteryTest is Test {
-    uint256 public constant PARITICIPATION_FEE = 0.01 ether;
+    uint256 public constant PARITICIPATION_FEE = 0.001 ether;
 
     address owner = makeAddr("owner");
     address[] players = [

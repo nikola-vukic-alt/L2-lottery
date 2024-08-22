@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {Lottery} from "./Lottery.sol";
 
 contract ReentrancyAttack {
-    uint256 public constant PARITICIPATION_FEE = 0.01 ether;
+    uint256 public constant PARITICIPATION_FEE = 0.001 ether;
 
     Lottery private s_target;
     address private s_owner;
