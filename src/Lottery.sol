@@ -31,8 +31,8 @@ contract Lottery {
     error NoPlayersEntered();
 
     modifier onlyWhenStateIsOpen() {
-        if (LotteryState.CLOSED == s_state) revert LotteryClosed();
         if (_shouldCloseLottery()) s_state = LotteryState.CLOSED;
+        if (LotteryState.CLOSED == s_state) revert LotteryClosed();
         _;
     }
 
