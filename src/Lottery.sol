@@ -14,7 +14,6 @@ contract Lottery {
     uint256 public constant PARITICIPATION_FEE = 0.00001 ether;
 
     LotteryState public s_state;
-
     address public immutable s_owner;
     EnumerableSet.AddressSet private s_players;
     uint256 private s_startTime;
@@ -32,8 +31,8 @@ contract Lottery {
     error NoPlayersEntered();
 
     modifier onlyWhenStateIsOpen() {
-        if (_shouldCloseLottery()) s_state = LotteryState.CLOSED;
         if (LotteryState.CLOSED == s_state) revert LotteryClosed();
+        if (_shouldCloseLottery()) s_state = LotteryState.CLOSED;
         _;
     }
 
