@@ -62,7 +62,6 @@ contract Lottery {
                 PARITICIPATION_FEE
             );
 
-        // Reentrancy vulnerability
         s_players.remove(msg.sender);
 
         emit PlayerWithdrew(msg.sender);
@@ -78,14 +77,12 @@ contract Lottery {
 
         s_state = LotteryState.CLOSED;
 
-        // Timestamp dependance vulnerability
         uint256 winnerIdx = block.timestamp % playerCount;
 
         address winner = s_players.at(winnerIdx);
 
         uint256 prize = address(this).balance;
 
-        // Could tehnically overflow
         uint256 ownerProfit = (prize * 5) / 100;
 
         prize -= ownerProfit;
@@ -98,7 +95,6 @@ contract Lottery {
         if (false == success)
             revert TransferFailed(address(this), s_owner, ownerProfit);
 
-        // DoS vulnerability
         for (uint256 i = 0; i < playerCount; i++) {
             s_players.remove(s_players.at(0));
         }
