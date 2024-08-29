@@ -44,3 +44,21 @@ contract WithdrawFromLottery is Script {
         withdrawFromLottery(mostRecentlyDeployed);
     }
 }
+
+contract PickWinner is Script {
+    function pickWinner(address mostRecentlyDeployed) public {
+        vm.startBroadcast();
+        Lottery(mostRecentlyDeployed).withdrawFromLottery();
+        vm.stopBroadcast();
+
+        console.log("Pick winner has been onvoked.");
+    }
+
+    function run() external {
+        address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment(
+            "Lottery",
+            block.chainid
+        );
+        pickWinner(mostRecentlyDeployed);
+    }
+}

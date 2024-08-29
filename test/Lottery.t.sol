@@ -60,7 +60,7 @@ contract LotteryTest is Test {
         assertEq(oldBalance + PARITICIPATION_FEE, newBalance);
     }
 
-    function test_DrawWinnerIncreasesWinnersBalance() public {
+    function test_pickWinnerIncreasesWinnersBalance() public {
         uint256 playerCount = 5;
         uint256 prize = playerCount * PARITICIPATION_FEE;
         uint256 ownerProfit = (prize * 5) / 100;
@@ -73,7 +73,7 @@ contract LotteryTest is Test {
         }
 
         vm.warp(1725027410);
-        lottery.drawWinner();
+        lottery.pickWinner();
 
         uint256 newBalance = address(players[0]).balance;
 
@@ -83,7 +83,7 @@ contract LotteryTest is Test {
         );
     }
 
-    function testDrawWinnerIncreasesOwnersBalance() public {
+    function testpickWinnerIncreasesOwnersBalance() public {
         uint256 playerCount = 5;
         uint256 prize = playerCount * PARITICIPATION_FEE;
         uint256 ownerProfit = (prize * 5) / 100;
@@ -96,7 +96,7 @@ contract LotteryTest is Test {
         }
 
         vm.warp(block.timestamp + 10 days);
-        lottery.drawWinner();
+        lottery.pickWinner();
 
         uint256 newBalance = address(owner).balance;
 
@@ -161,17 +161,17 @@ contract LotteryTest is Test {
         lottery.withdrawFromLottery();
     }
 
-    function test_DrawWinner_RevertIf_NoPlayersHaveEntered() public {
+    function test_pickWinner_RevertIf_NoPlayersHaveEntered() public {
         vm.expectRevert(Lottery.NoPlayersEntered.selector);
-        lottery.drawWinner();
+        lottery.pickWinner();
     }
 
-    function test_DrawWinner_RevertIf_NotEnoughTimeHasPassed()
+    function test_pickWinner_RevertIf_NotEnoughTimeHasPassed()
         public
         lotteryEntered
     {
         vm.expectRevert(Lottery.NotEnoughTimePassed.selector);
-        lottery.drawWinner();
+        lottery.pickWinner();
     }
 
     //////////////////////////////
@@ -193,7 +193,7 @@ contract LotteryTest is Test {
         lottery.withdrawFromLottery();
     }
 
-    function test_DrawWinnerEmitsEvent() public lotteryEntered {
+    function test_pickWinnerEmitsEvent() public lotteryEntered {
         vm.warp(block.timestamp + 10 days);
 
         vm.expectEmit();
@@ -202,6 +202,6 @@ contract LotteryTest is Test {
             PARITICIPATION_FEE - (PARITICIPATION_FEE * 5) / 100
         );
 
-        lottery.drawWinner();
+        lottery.pickWinner();
     }
 }

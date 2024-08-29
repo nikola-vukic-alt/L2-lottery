@@ -67,7 +67,7 @@ contract Lottery {
         emit PlayerWithdrew(msg.sender);
     }
 
-    function drawWinner() external {
+    function pickWinner() external {
         uint256 playerCount = s_players.length();
 
         if (0 == playerCount) revert NoPlayersEntered();
@@ -78,11 +78,8 @@ contract Lottery {
         s_state = LotteryState.CLOSED;
 
         uint256 winnerIdx = block.timestamp % playerCount;
-
         address winner = s_players.at(winnerIdx);
-
         uint256 prize = address(this).balance;
-
         uint256 ownerProfit = (prize * 5) / 100;
 
         prize -= ownerProfit;
