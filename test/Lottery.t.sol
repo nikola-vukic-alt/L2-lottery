@@ -72,7 +72,7 @@ contract LotteryTest is Test {
             lottery.enterLottery{value: PARITICIPATION_FEE}();
         }
 
-        vm.warp(1725027410);
+        vm.warp(1733069540);
         lottery.pickWinner();
 
         uint256 newBalance = address(players[0]).balance;
